@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -21,13 +22,17 @@ public class ChatController extends BaseController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @MessageMapping("/chat") 
-    public void processMessage(ChatMessage message) {
+    @MessageMapping("/chat")
+    public void processMessage(ChatMessage message, Principal principal) {
         List<ChatResponse> responses = chatService.handleMessage(message);
 
         // ส่งออกทีละข้อความไปยัง /topic/messages
         for (ChatResponse response : responses) {
-            messagingTemplate.convertAndSend("/topic/messages", response);
+            messagingTemplate.convertAndSendToUser(
+                    principal.getName(),    // username ของ sender
+                    "/queue/messages",      // ปลายทางส่วนตัว
+                    response
+            );
         }
     }
 

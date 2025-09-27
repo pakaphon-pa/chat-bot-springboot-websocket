@@ -4,11 +4,13 @@ import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import dynamic from "next/dynamic";
 import type { EmojiClickData } from "emoji-picker-react";
+import { v4 as uuidv4 } from "uuid";
 
 // ❗ ใช้ dynamic import เพื่อปิด SSR สำหรับตัว EmojiPicker
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 interface ChatMessage {
+  userId: string;
   sender: string;
   content: string;
   timezone: string;
@@ -16,6 +18,7 @@ interface ChatMessage {
 }
 
 const mockTimeZone = "Asia/Bangkok";
+const userId = uuidv4(); // 👈 UUID แทน user
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -31,7 +34,7 @@ export default function ChatPage() {
   }, [messages, showEmoji]);
 
   const connect = () => {
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS(`http://localhost:8080/ws?userId=${userId}`);
     const c = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
@@ -40,14 +43,16 @@ export default function ChatPage() {
 
     c.onConnect = () => {
       setConnected(true);
-      c.subscribe("/topic/messages", (msg: IMessage) => {
+      c.subscribe("/user/queue/messages", (msg: IMessage) => {
         const body: ChatMessage = JSON.parse(msg.body);
+        console.log("🤖 Bot reply:", msg.body);
         setMessages((prev) => [...prev, body]);
       });
       // ส่ง JOIN
       c.publish({
         destination: "/app/chat",
         body: JSON.stringify({
+          userId: userId,
           sender: "User1",
           content: "",
           type: "JOIN",
@@ -63,6 +68,7 @@ export default function ChatPage() {
   const sendMessage = () => {
     if (!client || !input.trim()) return;
     const chat: ChatMessage = {
+      userId: userId,
       sender: "User1",
       content: input,
       type: "CHAT",

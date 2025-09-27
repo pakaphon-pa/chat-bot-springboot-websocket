@@ -44,7 +44,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChatResponse> handleMessage(ChatMessage message) {
         List<ChatResponse> responses = new ArrayList<>();
-        String userId = message.getSender();
+        String userId = message.getUserId();
 
         ConversationState state = conversationManager.getState(userId);
 
