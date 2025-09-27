@@ -11,8 +11,11 @@ const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 interface ChatMessage {
   sender: string;
   content: string;
+  timezone: string;
   type: "JOIN" | "CHAT" | "LEAVE";
 }
+
+const mockTimeZone = "Asia/Bangkok";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -44,7 +47,12 @@ export default function ChatPage() {
       // ส่ง JOIN
       c.publish({
         destination: "/app/chat",
-        body: JSON.stringify({ sender: "User1", content: "", type: "JOIN" }),
+        body: JSON.stringify({
+          sender: "User1",
+          content: "",
+          type: "JOIN",
+          timezone: mockTimeZone,
+        }),
       });
     };
 
@@ -54,7 +62,12 @@ export default function ChatPage() {
 
   const sendMessage = () => {
     if (!client || !input.trim()) return;
-    const chat: ChatMessage = { sender: "User1", content: input, type: "CHAT" };
+    const chat: ChatMessage = {
+      sender: "User1",
+      content: input,
+      type: "CHAT",
+      timezone: mockTimeZone,
+    };
     client.publish({ destination: "/app/chat", body: JSON.stringify(chat) });
     setMessages((prev) => [...prev, chat]);
     setInput("");
