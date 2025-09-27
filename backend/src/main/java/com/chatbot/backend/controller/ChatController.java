@@ -5,21 +5,30 @@ import com.chatbot.backend.dto.ChatResponse;
 import com.chatbot.backend.service.ChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class ChatController extends BaseController {
 
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, SimpMessagingTemplate messagingTemplate) {
         this.chatService = chatService;
+        this.messagingTemplate = messagingTemplate;
     }
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/messages")
-    public ChatResponse processMessage(ChatMessage message) {
-        return chatService.handleMessage(message);
+    @MessageMapping("/chat") 
+    public void processMessage(ChatMessage message) {
+        List<ChatResponse> responses = chatService.handleMessage(message);
+
+        // ส่งออกทีละข้อความไปยัง /topic/messages
+        for (ChatResponse response : responses) {
+            messagingTemplate.convertAndSend("/topic/messages", response);
+        }
     }
 
 }

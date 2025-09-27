@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.Random;
 
 @Service
-public class WeatherClientIml implements WeatherClient {
+public class WeatherClientImpl implements WeatherClient {
     private static final String[] MOCK_WEATHER = {
             "Sunny", "Cloudy", "Rainy", "Stormy"
     };
