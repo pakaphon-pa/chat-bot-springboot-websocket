@@ -7,6 +7,7 @@ import com.chatbot.backend.dto.ChatResponse;
 import com.chatbot.backend.model.UserAccountData;
 import com.chatbot.backend.repository.GreetingMessageRepository;
 import com.chatbot.backend.service.ChatService;
+import com.chatbot.backend.service.IntentDetectionService;
 import com.chatbot.backend.util.ConversationManager;
 import com.chatbot.backend.util.constant.ConversationState;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -24,17 +26,19 @@ public class ChatServiceImpl implements ChatService {
     private final GreetingMessageRepository greetingMessageRepository;
     private final CoreSystemClient coreSystemClient;
     private final ConversationManager conversationManager;
-
+    private final IntentDetectionService intentDetectionService;
 
 
     public ChatServiceImpl(WeatherClient weatherClient,
                            GreetingMessageRepository greetingMessageRepository,
                            CoreSystemClient coreSystemClient,
-                           ConversationManager conversationManager) {
+                           ConversationManager conversationManager,
+                           IntentDetectionService intentDetectionService) {
         this.weatherClient = weatherClient;
         this.greetingMessageRepository = greetingMessageRepository;
         this.coreSystemClient = coreSystemClient;
         this.conversationManager = conversationManager;
+        this.intentDetectionService = intentDetectionService;
     }
 
     @Override
@@ -145,7 +149,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private List<ChatResponse> handleDefault(String userId, ChatMessage message) {
-        String text = message.getContent().toLowerCase();
+        Optional<ChatResponse> detected = intentDetectionService.detectIntent(message);
+        if (detected.isPresent()) {
+            return List.of(detected.get());
+        }
         return List.of(new ChatResponse("Bot", "คุณพูดว่า: " + message.getContent()));
     }
 
