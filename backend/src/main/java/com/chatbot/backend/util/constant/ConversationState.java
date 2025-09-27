@@ -5,5 +5,7 @@ public enum ConversationState {
     WAITING_FOR_OVERDUE_CONFIRMATION,
     WAITING_FOR_UPDATED_BALANCE_CONFIRMATION,
     WAITING_FOR_DUPLICATE_CONFIRMATION,
+    WAITING_TO_END,
+    END,
     COMPLETED                           // จบ flow หนึ่งรอบ
 }

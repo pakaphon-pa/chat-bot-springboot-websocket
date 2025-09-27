@@ -4,6 +4,7 @@ import com.chatbot.backend.client.CoreSystemClient;
 import com.chatbot.backend.client.WeatherClient;
 import com.chatbot.backend.dto.ChatMessage;
 import com.chatbot.backend.dto.ChatResponse;
+import com.chatbot.backend.model.ConversationContext;
 import com.chatbot.backend.model.UserAccountData;
 import com.chatbot.backend.repository.GreetingMessageRepository;
 import com.chatbot.backend.service.Impl.ChatServiceImpl;
@@ -26,19 +27,22 @@ public class ChatServiceImplTest {
     private CoreSystemClient coreSystemClient;
     private ConversationManager conversationManager;
     private ChatServiceImpl chatService;
+    private IntentDetectionService intentDetectionService;
 
     @BeforeEach
     void setUp() {
         weatherClient = Mockito.mock(WeatherClient.class);
         greetingMessageRepository = Mockito.mock(GreetingMessageRepository.class);
         coreSystemClient = Mockito.mock(CoreSystemClient.class);
-        conversationManager = new ConversationManager();
+        conversationManager = Mockito.mock(ConversationManager.class);
+        intentDetectionService = Mockito.mock(IntentDetectionService.class);
 
         chatService = new ChatServiceImpl(
                 weatherClient,
                 greetingMessageRepository,
                 coreSystemClient,
-                conversationManager
+                conversationManager,
+                intentDetectionService
         );
     }
 
@@ -100,7 +104,9 @@ public class ChatServiceImplTest {
                 .thenReturn("Good morning, stay dry out there!");
         when(coreSystemClient.getUserAccountData("Carol"))
                 .thenReturn(new UserAccountData("Carol", 110000.0, LocalDate.now().plusDays(5), List.of(5000.0, 5000.0)));
-
+        ConversationContext dummyContext = new ConversationContext("test-user");
+        when(conversationManager.getContext(Mockito.anyString()))
+                .thenReturn(dummyContext);
         // Act
         List<ChatResponse> responses = chatService.handleMessage(join);
 

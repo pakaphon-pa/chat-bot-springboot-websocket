@@ -4,6 +4,7 @@ import com.chatbot.backend.client.CoreSystemClient;
 import com.chatbot.backend.client.WeatherClient;
 import com.chatbot.backend.dto.ChatMessage;
 import com.chatbot.backend.dto.ChatResponse;
+import com.chatbot.backend.model.ConversationContext;
 import com.chatbot.backend.model.UserAccountData;
 import com.chatbot.backend.repository.GreetingMessageRepository;
 import com.chatbot.backend.service.ChatService;
@@ -46,8 +47,9 @@ public class ChatServiceImpl implements ChatService {
         List<ChatResponse> responses = new ArrayList<>();
         String userId = message.getUserId();
 
-        ConversationState state = conversationManager.getState(userId);
-
+        ConversationContext context = conversationManager.getContext(userId);
+        context.touch();
+        ConversationState state = context.getState();
         // Case: User JOIN
         if ("JOIN".equalsIgnoreCase(message.getType())) {
             return handleGreeting(userId, message.getTimezone());
@@ -86,6 +88,10 @@ public class ChatServiceImpl implements ChatService {
         } else if (data.getLastTransactions().size() >= 2 &&
                 data.getLastTransactions().get(0).equals(data.getLastTransactions().get(1))) {
             responses.addAll(handleDuplicateTransactionCase(userId));
+        } else {
+            conversationManager.setState(userId, ConversationState.IDLE);
+            return List.of(new ChatResponse("Bot",
+                    "Do you need any further assistance?"));
         }
 
         return responses;
