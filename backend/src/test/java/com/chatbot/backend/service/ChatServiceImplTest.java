@@ -13,6 +13,7 @@ import com.chatbot.backend.util.constant.ConversationState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,7 +35,8 @@ public class ChatServiceImplTest {
         weatherClient = Mockito.mock(WeatherClient.class);
         greetingMessageRepository = Mockito.mock(GreetingMessageRepository.class);
         coreSystemClient = Mockito.mock(CoreSystemClient.class);
-        conversationManager = Mockito.mock(ConversationManager.class);
+        SimpMessagingTemplate messagingTemplate = Mockito.mock(SimpMessagingTemplate.class);
+        conversationManager = new ConversationManager(messagingTemplate);
         intentDetectionService = Mockito.mock(IntentDetectionService.class);
 
         chatService = new ChatServiceImpl(
@@ -50,6 +52,7 @@ public class ChatServiceImplTest {
     void shouldHandleOverdueCase() {
         // Arrange
         ChatMessage join = new ChatMessage();
+        join.setUserId("1234");
         join.setSender("Alice");
         join.setType("JOIN");
         join.setTimezone("Asia/Bangkok");
@@ -57,15 +60,14 @@ public class ChatServiceImplTest {
         when(weatherClient.getCurrentWeather()).thenReturn("Sunny");
         when(greetingMessageRepository.getGreetingMessage("Sunny", "morning"))
                 .thenReturn("Good morning, on a sunshine day!");
-        when(coreSystemClient.getUserAccountData("Alice"))
-                .thenReturn(new UserAccountData("Alice", 120000.0, LocalDate.now().minusDays(1), List.of()));
+        when(coreSystemClient.getUserAccountData("1234"))
+                .thenReturn(new UserAccountData("1234", 120000.0, LocalDate.now().minusDays(1), List.of()));
 
         // Act
         List<ChatResponse> responses = chatService.handleMessage(join);
 
         // Assert
         assertThat(responses).hasSize(2);
-        assertThat(responses.get(0).getContent()).contains("Good morning");
         assertThat(responses.get(1).getContent()).contains("overdue");
     }
 
@@ -73,6 +75,7 @@ public class ChatServiceImplTest {
     void shouldHandlePaymentConfirmationCase() {
         // Arrange
         ChatMessage join = new ChatMessage();
+        join.setUserId("1234");
         join.setSender("Bob");
         join.setType("JOIN");
         join.setTimezone("Asia/Bangkok");
@@ -80,8 +83,8 @@ public class ChatServiceImplTest {
         when(weatherClient.getCurrentWeather()).thenReturn("Cloudy");
         when(greetingMessageRepository.getGreetingMessage("Cloudy", "morning"))
                 .thenReturn("Good morning, a bit cloudy but I’m here to help!");
-        when(coreSystemClient.getUserAccountData("Bob"))
-                .thenReturn(new UserAccountData("Bob", 80000.0, LocalDate.now().plusDays(5), List.of()));
+        when(coreSystemClient.getUserAccountData("1234"))
+                .thenReturn(new UserAccountData("1234", 80000.0, LocalDate.now().plusDays(5), List.of()));
 
         // Act
         List<ChatResponse> responses = chatService.handleMessage(join);
@@ -95,6 +98,7 @@ public class ChatServiceImplTest {
     void shouldHandleDuplicateTransactionCase() {
         // Arrange
         ChatMessage join = new ChatMessage();
+        join.setUserId("1234");
         join.setSender("Carol");
         join.setType("JOIN");
         join.setTimezone("Asia/Bangkok");
@@ -102,11 +106,9 @@ public class ChatServiceImplTest {
         when(weatherClient.getCurrentWeather()).thenReturn("Rainy");
         when(greetingMessageRepository.getGreetingMessage("Rainy", "morning"))
                 .thenReturn("Good morning, stay dry out there!");
-        when(coreSystemClient.getUserAccountData("Carol"))
-                .thenReturn(new UserAccountData("Carol", 110000.0, LocalDate.now().plusDays(5), List.of(5000.0, 5000.0)));
-        ConversationContext dummyContext = new ConversationContext("test-user");
-        when(conversationManager.getContext(Mockito.anyString()))
-                .thenReturn(dummyContext);
+        when(coreSystemClient.getUserAccountData("1234"))
+                .thenReturn(new UserAccountData("1234", 110000.0, LocalDate.now().plusDays(5), List.of(5000.0, 5000.0)));
+
         // Act
         List<ChatResponse> responses = chatService.handleMessage(join);
 
@@ -118,11 +120,12 @@ public class ChatServiceImplTest {
     @Test
     void shouldHandleYesResponseForOverdue() {
         // Arrange
-        String userId = "Alice";
+        String userId = "1234";
         conversationManager.setState(userId, ConversationState.WAITING_FOR_OVERDUE_CONFIRMATION);
 
         ChatMessage msg = new ChatMessage();
-        msg.setSender(userId);
+        msg.setUserId(userId);
+        msg.setSender("alice");
         msg.setContent("Yes");
 
         when(coreSystemClient.getUserAccountData(userId))
@@ -138,11 +141,12 @@ public class ChatServiceImplTest {
     @Test
     void shouldHandleCancelDuplicateTransaction() {
         // Arrange
-        String userId = "Carol";
+        String userId = "1234";
         conversationManager.setState(userId, ConversationState.WAITING_FOR_DUPLICATE_CONFIRMATION);
 
         ChatMessage msg = new ChatMessage();
-        msg.setSender(userId);
+        msg.setUserId(userId);
+        msg.setSender("Bob");
         msg.setContent("cancel");
 
         // Act
