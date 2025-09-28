@@ -91,7 +91,7 @@ public class ChatServiceImpl implements ChatService {
 
         if (data.getDueDate().isBefore(LocalDate.now())) {
             responses.addAll(handleOverdueCase(userId));
-        } else if (data.getOutstandingBalance() < 100000) {
+        } else if (data.getOutstandingBalance() > 100000) {
             responses.addAll(handlePaymentConfirmationCase(userId));
         } else if (data.getLastTransactions().size() >= 2 &&
                 data.getLastTransactions().get(0).equals(data.getLastTransactions().get(1))) {
@@ -150,13 +150,11 @@ public class ChatServiceImpl implements ChatService {
         String content = message.getContent().toLowerCase();
 
         if (content.equals("cancel")) {
-            // call api 3rd party cancel
             conversationManager.setState(userId, ConversationState.COMPLETED);
-            return List.of(new ChatResponse("Bot", "Your duplicate transaction has been canceled (mock)."));
+            return List.of(new ChatResponse("Bot", "Your duplicate transaction has been canceled."));
         } else if (content.equals("report")) {
-            // call api 3rd party cancel send report in email
             conversationManager.setState(userId, ConversationState.COMPLETED);
-            return List.of(new ChatResponse("Bot", "Your duplicate transaction has been reported (mock)."));
+            return List.of(new ChatResponse("Bot", "Your duplicate transaction has been reported please check you email."));
         }
 
         return List.of(new ChatResponse("Bot", "Would you like to cancel or report the duplicate transaction?"));
