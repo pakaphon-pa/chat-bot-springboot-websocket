@@ -25,3 +25,7 @@
 
     - java springboot web socket
     - next.js sockjs-client stompjs ใช้สำหรับ connect websocket
+
+### Docs
+
+    https://docs.google.com/presentation/d/1B5rLogTd-GEbF4WDbPa0mMMePToBBMcBpNXhGy4GQzA/edit?usp=sharing
