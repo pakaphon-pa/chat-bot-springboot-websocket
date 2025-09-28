@@ -63,7 +63,7 @@ public class ConversationManager {
                     );
                     messagingTemplate.convertAndSendToUser(userId, "/queue/messages", survey);
 
-                    context.setState(ConversationState.COMPLETED);
+                    context.setState(ConversationState.END);
                 }
             }
         }, 1, 1, TimeUnit.SECONDS);

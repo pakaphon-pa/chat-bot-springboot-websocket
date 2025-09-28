@@ -10,16 +10,16 @@
     [x] Java spring boot
     [x] websocket
     [x] next.js
-    [] unit test
+    [x] unit test
     [] high level design ( draw.io )
     [x] docker-compose, docker
 
 ### Functional
 
-    [] greeting
-    [] intent prediction
-    [] intent detection
-    [] Goodbye and Evaluate satisfaction
+    [x] greeting
+    [x] intent prediction
+    [x] intent detection
+    [x] Goodbye and Evaluate satisfaction
 
 ### Note
 
