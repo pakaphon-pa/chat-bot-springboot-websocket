@@ -5,6 +5,7 @@ import com.chatbot.backend.client.WeatherClient;
 import com.chatbot.backend.dto.ChatMessage;
 import com.chatbot.backend.dto.ChatResponse;
 import com.chatbot.backend.model.ConversationContext;
+import com.chatbot.backend.model.IntentDefinition;
 import com.chatbot.backend.model.UserAccountData;
 import com.chatbot.backend.repository.FeedbackRepository;
 import com.chatbot.backend.repository.GreetingMessageRepository;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +66,7 @@ public class ChatServiceImpl implements ChatService {
             case WAITING_FOR_UPDATED_BALANCE_CONFIRMATION -> handleBalanceConfirmation(userId, message, false);
             case WAITING_FOR_DUPLICATE_CONFIRMATION -> handleDuplicateConfirmation(userId, message);
             case WAITING_TO_FEEDBACK -> handleFeedback(userId, message);
+            case WAITING_TO_END -> handleWaitingToEND(userId,message);
             default -> handleDefault(userId, message);
         };
     }
@@ -164,7 +167,19 @@ public class ChatServiceImpl implements ChatService {
         if (detected.isPresent()) {
             return List.of(detected.get());
         }
-        return List.of(new ChatResponse("Bot", "คุณพูดว่า: " + message.getContent()));
+
+        List<IntentDefinition> shuffleIntent = shuffleIntent();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("I didn’t understand what you said 🤖\n");
+        sb.append("Do you mean one of these? Please type the keyword:\n\n");
+
+        for (int i = 0; i < 3 && i < shuffleIntent.size(); i++) {
+            sb.append("- " + shuffleIntent.get(i).getDescription() + "\n");
+        }
+
+        conversationManager.setState(userId, ConversationState.IDLE);
+        return List.of(new ChatResponse("Bot", sb.toString()));
     }
 
     private List<ChatResponse> handleFeedback(String userId, ChatMessage message) {
@@ -172,6 +187,23 @@ public class ChatServiceImpl implements ChatService {
         feedbackRepository.SaveFeedback(message.getContent());
         return List.of(new ChatResponse("Bot", "Thanks for Feedback"));
     }
+
+    private List<ChatResponse> handleWaitingToEND(String userId, ChatMessage message) {
+        if (message.getContent().equals("no")) {
+            conversationManager.setState(userId, ConversationState.WAITING_TO_FEEDBACK);
+            return List.of(new ChatResponse("Bot", "Thanks for chatting with me today 🙏 Before you go, could you rate your experience? 👍 😐 👎"));
+        }
+        return  handleDefault(userId, message);
+    }
+
+    private List<IntentDefinition> shuffleIntent() {
+        List<IntentDefinition> listIntent = intentDetectionService.getAllIntent();
+        List<IntentDefinition> randomIntents = new ArrayList<>(listIntent);
+        Collections.shuffle(randomIntents);
+
+        return randomIntents;
+    }
+
 
 
     private String getTimeOfDay(String timezone) {

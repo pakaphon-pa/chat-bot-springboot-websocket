@@ -7,6 +7,7 @@ import com.chatbot.backend.repository.IntentRepository;
 import com.chatbot.backend.service.IntentDetectionService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,5 +31,10 @@ public class IntentDetectionServiceImpl implements IntentDetectionService {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<IntentDefinition> getAllIntent() {
+        return intentRepository.findAll();
     }
 }

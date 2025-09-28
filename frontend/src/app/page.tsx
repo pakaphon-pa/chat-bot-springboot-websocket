@@ -113,6 +113,7 @@ export default function ChatPage() {
                       ? "bg-blue-600 text-white"
                       : "bg-gray-200 text-gray-900"
                   }`}
+                  style={{ whiteSpace: "pre-line" }}
                 >
                   {m.content}
                 </div>

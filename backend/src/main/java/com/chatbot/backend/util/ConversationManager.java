@@ -34,6 +34,7 @@ public class ConversationManager {
     public void setState(String userId, ConversationState state) {
         ConversationContext context = getContext(userId);
         context.setState(state);
+        context.touch();
     }
 
     public ConversationState getState(String userId) {
