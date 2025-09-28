@@ -31,7 +31,7 @@ public class IntentRepositoryImpl implements IntentRepository {
 
             new IntentDefinition("REPORT_LOST_CARD",
                     "User lost their card",
-                    List.of("lost card", "บัตรหาย", "card missing"),
+                    List.of("lost my card", "บัตรหาย", "card missing"),
                     "Your card has been temporarily blocked. Please call 111-222-333 for further assistance.")
     );
 
