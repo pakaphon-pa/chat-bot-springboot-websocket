@@ -66,8 +66,13 @@ public class ConversationManager {
                     List<ChatResponse> messages = List.of(survey);
                     messagingTemplate.convertAndSendToUser(userId, "/queue/messages", messages);
 
+                    context.setState(ConversationState.WAITING_TO_FEEDBACK);
+                }
+
+                if (context.getState() == ConversationState.WAITING_TO_FEEDBACK && context.isInactive(INACTIVITY_TIMEOUT)) {
                     context.setState(ConversationState.END);
                 }
+
             }
         }, 1, 1, TimeUnit.SECONDS);
     }

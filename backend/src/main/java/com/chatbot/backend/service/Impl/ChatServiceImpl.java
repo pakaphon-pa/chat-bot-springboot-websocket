@@ -6,6 +6,7 @@ import com.chatbot.backend.dto.ChatMessage;
 import com.chatbot.backend.dto.ChatResponse;
 import com.chatbot.backend.model.ConversationContext;
 import com.chatbot.backend.model.UserAccountData;
+import com.chatbot.backend.repository.FeedbackRepository;
 import com.chatbot.backend.repository.GreetingMessageRepository;
 import com.chatbot.backend.service.ChatService;
 import com.chatbot.backend.service.IntentDetectionService;
@@ -28,18 +29,20 @@ public class ChatServiceImpl implements ChatService {
     private final CoreSystemClient coreSystemClient;
     private final ConversationManager conversationManager;
     private final IntentDetectionService intentDetectionService;
-
+    private final FeedbackRepository feedbackRepository;
 
     public ChatServiceImpl(WeatherClient weatherClient,
                            GreetingMessageRepository greetingMessageRepository,
                            CoreSystemClient coreSystemClient,
                            ConversationManager conversationManager,
-                           IntentDetectionService intentDetectionService) {
+                           IntentDetectionService intentDetectionService,
+                           FeedbackRepository feedbackRepository) {
         this.weatherClient = weatherClient;
         this.greetingMessageRepository = greetingMessageRepository;
         this.coreSystemClient = coreSystemClient;
         this.conversationManager = conversationManager;
         this.intentDetectionService = intentDetectionService;
+        this.feedbackRepository = feedbackRepository;
     }
 
     @Override
@@ -59,6 +62,7 @@ public class ChatServiceImpl implements ChatService {
             case WAITING_FOR_OVERDUE_CONFIRMATION -> handleBalanceConfirmation(userId, message, true);
             case WAITING_FOR_UPDATED_BALANCE_CONFIRMATION -> handleBalanceConfirmation(userId, message, false);
             case WAITING_FOR_DUPLICATE_CONFIRMATION -> handleDuplicateConfirmation(userId, message);
+            case WAITING_TO_FEEDBACK -> handleFeedback(userId, message);
             default -> handleDefault(userId, message);
         };
     }
@@ -160,6 +164,12 @@ public class ChatServiceImpl implements ChatService {
             return List.of(detected.get());
         }
         return List.of(new ChatResponse("Bot", "คุณพูดว่า: " + message.getContent()));
+    }
+
+    private List<ChatResponse> handleFeedback(String userId, ChatMessage message) {
+        conversationManager.setState(userId, ConversationState.END);
+        feedbackRepository.SaveFeedback(message.getContent());
+        return List.of(new ChatResponse("Bot", "Thanks for Feedback"));
     }
 
 

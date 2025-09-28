@@ -6,6 +6,7 @@ import com.chatbot.backend.dto.ChatMessage;
 import com.chatbot.backend.dto.ChatResponse;
 import com.chatbot.backend.model.ConversationContext;
 import com.chatbot.backend.model.UserAccountData;
+import com.chatbot.backend.repository.FeedbackRepository;
 import com.chatbot.backend.repository.GreetingMessageRepository;
 import com.chatbot.backend.service.Impl.ChatServiceImpl;
 import com.chatbot.backend.util.ConversationManager;
@@ -29,7 +30,7 @@ public class ChatServiceImplTest {
     private ConversationManager conversationManager;
     private ChatServiceImpl chatService;
     private IntentDetectionService intentDetectionService;
-
+    private FeedbackRepository feedbackRepository;
     @BeforeEach
     void setUp() {
         weatherClient = Mockito.mock(WeatherClient.class);
@@ -38,13 +39,15 @@ public class ChatServiceImplTest {
         SimpMessagingTemplate messagingTemplate = Mockito.mock(SimpMessagingTemplate.class);
         conversationManager = new ConversationManager(messagingTemplate);
         intentDetectionService = Mockito.mock(IntentDetectionService.class);
+        feedbackRepository = Mockito.mock(FeedbackRepository.class);
 
         chatService = new ChatServiceImpl(
                 weatherClient,
                 greetingMessageRepository,
                 coreSystemClient,
                 conversationManager,
-                intentDetectionService
+                intentDetectionService,
+                feedbackRepository
         );
     }
 

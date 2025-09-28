@@ -25,7 +25,6 @@ public class ChatController extends BaseController {
     @MessageMapping("/chat")
     public void processMessage(ChatMessage message, Principal principal) {
         List<ChatResponse> responses = chatService.handleMessage(message);
-        System.out.println(responses);
         messagingTemplate.convertAndSendToUser(
                     principal.getName(),
                     "/queue/messages",
