@@ -25,15 +25,13 @@ public class ChatController extends BaseController {
     @MessageMapping("/chat")
     public void processMessage(ChatMessage message, Principal principal) {
         List<ChatResponse> responses = chatService.handleMessage(message);
-
-        // ส่งออกทีละข้อความไปยัง /topic/messages
-        for (ChatResponse response : responses) {
-            messagingTemplate.convertAndSendToUser(
-                    principal.getName(),    // username ของ sender
-                    "/queue/messages",      // ปลายทางส่วนตัว
-                    response
+        System.out.println(responses);
+        messagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    "/queue/messages",
+                    responses
             );
-        }
+
     }
 
 }

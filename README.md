@@ -11,7 +11,7 @@
     [x] websocket
     [x] next.js
     [x] unit test
-    [] high level design ( draw.io )
+    [x] high level design ( draw.io )
     [x] docker-compose, docker
 
 ### Functional
@@ -24,4 +24,4 @@
 ### Note
 
     - java springboot web socket
-    - sockjs-client stompjs ใช้สำหรับ connect websocket
+    - next.js sockjs-client stompjs ใช้สำหรับ connect websocket

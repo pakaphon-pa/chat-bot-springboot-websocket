@@ -44,9 +44,9 @@ export default function ChatPage() {
     c.onConnect = () => {
       setConnected(true);
       c.subscribe("/user/queue/messages", (msg: IMessage) => {
-        const body: ChatMessage = JSON.parse(msg.body);
+        const body: ChatMessage[] = JSON.parse(msg.body);
         console.log("🤖 Bot reply:", msg.body);
-        setMessages((prev) => [...prev, body]);
+        setMessages((prev) => [...prev, ...body]);
       });
       // ส่ง JOIN
       c.publish({
@@ -104,6 +104,9 @@ export default function ChatPage() {
                   m.sender === "User1" ? "justify-end" : "justify-start"
                 }`}
               >
+                {m.sender !== "User1" && (
+                  <div className="mr-2 text-2xl">🤖</div>
+                )}
                 <div
                   className={`px-4 py-2 rounded-lg max-w-xs ${
                     m.sender === "User1"
