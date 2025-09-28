@@ -58,6 +58,7 @@ public class ChatServiceImpl implements ChatService {
             return handleGreeting(userId, message.getTimezone());
         }
 
+
         return switch (state) {
             case WAITING_FOR_OVERDUE_CONFIRMATION -> handleBalanceConfirmation(userId, message, true);
             case WAITING_FOR_UPDATED_BALANCE_CONFIRMATION -> handleBalanceConfirmation(userId, message, false);
