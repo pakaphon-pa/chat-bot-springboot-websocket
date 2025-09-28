@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Time;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -48,11 +49,12 @@ public class ConversationManager {
                 if ((context.getState() == ConversationState.IDLE || context.getState() == ConversationState.COMPLETED) && context.isInactive(INACTIVITY_TIMEOUT)) {
 
                     ChatResponse followUp = new ChatResponse("Bot","Do you need any further assistance?");
+                    List<ChatResponse> messages = List.of(followUp);
                     context.setState(ConversationState.WAITING_TO_END);
                     messagingTemplate.convertAndSendToUser(
                             userId,
                             "/queue/messages",
-                            followUp
+                            messages
                     );
                    continue;
                 }
@@ -61,7 +63,8 @@ public class ConversationManager {
                     ChatResponse survey = new ChatResponse(
                             "Bot", "Thanks for chatting with me today 🙏 Before you go, could you rate your experience? 👍 😐 👎"
                     );
-                    messagingTemplate.convertAndSendToUser(userId, "/queue/messages", survey);
+                    List<ChatResponse> messages = List.of(survey);
+                    messagingTemplate.convertAndSendToUser(userId, "/queue/messages", messages);
 
                     context.setState(ConversationState.END);
                 }
