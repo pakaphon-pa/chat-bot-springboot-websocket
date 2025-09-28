@@ -161,6 +161,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private List<ChatResponse> handleDefault(String userId, ChatMessage message) {
+        conversationManager.setState(userId, ConversationState.IDLE);
         Optional<ChatResponse> detected = intentDetectionService.detectIntent(message);
         if (detected.isPresent()) {
             return List.of(detected.get());
@@ -176,7 +177,6 @@ public class ChatServiceImpl implements ChatService {
             sb.append("- " + shuffleIntent.get(i).getDescription() + "\n");
         }
 
-        conversationManager.setState(userId, ConversationState.IDLE);
         return List.of(new ChatResponse("Bot", sb.toString()));
     }
 
